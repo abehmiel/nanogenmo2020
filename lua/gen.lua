@@ -24,11 +24,44 @@ end
 
 function scorePhrase(sc, text)
     local phrase = "Mario added "..sc.." points to his score. "
+    text = safeAppend(text, phrase)
+    return text
+end
+
+function safeAppend(text, phr)
     if text ~= nil then
-        text = text..phrase
+        text = text..phr
     else 
-        text = phrase
+        text = phr
     end
+    return text
+end
+
+function floatPhrase(floatState, spriteState, text)
+    local phrase = ""
+    if floatState == 0x00 then
+        phrase = phrase.."Mario lands on the ground. "
+    elseif floatState == 0x01 and spriteState ~= 0x0B then
+        phrase = phrase.."Mario jumps! "
+    elseif floatState == 0x02 then
+        phrase = phrase.."Mario falls off an edge. "
+    elseif floatState == 0x03 then
+        phrase = phrase.."Mario slides down the flagpole. "
+    end
+    text = safeAppend(text, phrase)
+    return text
+end
+
+function spritePhrase(spriteState, oldSpriteState, text)
+    local phrase = ""
+    if spriteState == 0x03 then
+        phrase = phrase.."Mario goes down a pipe. "
+    elseif spriteState == 0x04 then --or spriteState == 0x05 then
+        phrase = phrase.."Mario is just moseying along with nothing to stop him. "
+    elseif spriteState == 0x06 then
+        phrase = phrase.."Mario stands up, brushes off his overalls, and gets ready for another go. "
+    end
+    text = safeAppend(text, phrase)
     return text
 end
 
@@ -66,12 +99,26 @@ while true do
     blockColl = memory.readbyte(0x0490) --0xFF: off, 0xFE: collision
     enemyColl = memory.readbyte(0x0491)
     fireballCount = memory.readbyte(0x06CE)
-    
+    spriteState = memory.readbyte(0x000E)
+
+    -- check score
 	scoreDiff = checkScore(score, oldScore)
     if scoreDiff ~= 0 then
         text = scorePhrase(scoreDiff, text)
     end
     oldScore = score
+
+    -- check player state
+    if (spriteState ~= oldSpriteState) and (oldSpriteState ~= nil) then
+        text = spritePhrase(spriteState, oldSpriteState, text)
+    end
+    oldSpriteState = spriteState
+
+    -- check float state
+    if (floatState ~= oldFloatState) and (oldFloatState ~= nil) then
+        text = floatPhrase(floatState, spriteState, text)
+    end 
+    oldFloatState = floatState
 
     if state == 3 then --GAME OVER, also detectable if lives == 256
         gameOver = true;
