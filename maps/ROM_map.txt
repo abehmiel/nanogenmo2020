@@ -1,0 +1,174 @@
+Graphical Values
+Backgrounds
+0x005DF to 0x----- (0001) = Background (sky) color for Underwater levels 2-2 and 7-2.
+0x005E0 to 0x----- (0001) = Background (sky) color for Overworld levels 1-1, 1-3, 2-1, 2-3, 4-1, 4-3, 5-3, 7-3, 8-1, 8-2 and 8-3.
+0x005E1 to 0x----- (0001) = Background color for Underground levels 1-2 and 4-2. (Also used for New Level and Game Over screens.)
+0x005E2 to 0x----- (0001) = Background color for Dungeon levels 1-4, 2-4, etc.
+0x005E3 to 0x----- (0001) = Background color for Nighttime Overworld levels 3-3, 6-1 and 6-2.
+0x005E4 to 0x----- (0001) = Background color for Winter Overworld levels 5-1, 5-2 and 7-1.
+0x005E5 to 0x----- (0001) = Background color for Winter Nighttime Overworld levels 3-1 and 3-2 (and the cloud portion of 6-2).
+0x005E6 to 0x----- (0001) = Background color for level 6-3.
+Blocks Graphics
+0x00C00 to 0x00C03----- (0004) = CHR indexes of normal overworld brick block
+0x00C08 to 0x00C0B----- (0004) = CHR indexes of overworld brick block containing (unknown)
+0x00C10 to 0x00C13----- (0004) = CHR indexes of overworld brick block containing starman
+0x00C12 to 0x00C15----- (0004) = CHR indexes of overworld brick block containing a power-up
+0x00C16 to 0x00C19----- (0004) = CHR indexes of overworld brick block containing a beanstalk
+0x00C1C to 0x00C1F----- (0004) = CHR indexes of overworld brick block containing multi-coin
+0x00C20 to 0x00C23----- (0004) = CHR indexes of overworld brick block containing (unknown)
+0x00C9C to 0x00C9F----- (0004) = CHR indexes of question block containing a coin
+0x00CA0 to 0x00CA3----- (0004) = CHR indexes of question block containing a power-up
+Palettes
+Underwater
+0x0CB7 to 0x0CBA (0004) = Seaweed, Entrance Pipe in underwater portion of 8-4.
+0x0CBB to 0x0CBE (0004) = Ocean Floor, Pipes, Brickwork in underwater portion of 8-4.
+0x0CBF to 0x0CC2 (0004) = Water, topscreen text.
+0x0CC3 to 0x0CC6 (0004) = Coins, ? blocks (overwritten by 4 values starting at 0x09e1)
+0x0CC7 to 0x0CCA (0004) = Player color (overwritten)
+0x0CCB to 0x0CCE (0004) = Cheep-Cheeps (gray)
+0x0CCF to 0x0CD2 (0004) = Bubbles, Fireballs, Lifts, Cheep-Cheeps (red)
+0x0CD3 to 0x0CD6 (0004) = Blooper
+Overworld
+0x0CDB to 0x0CDE (0004) = Bushes, Mountains, Pipes, Flagpole, Treetops, Bridgerails (2-3).
+0x0CDF to 0x0CE2 (0004) = Title Screen Marquee/Icon/Text, Brickwork, Empty ? Blocks, Pyramid Blocks, Castles, Fencing, Treetrunks, Bridge Platforms, Mushroom Platform Stalks (4-2), Bill Blasters.
+0x0CE3 to 0x0CE6 (0004) = Topscreen Text, Clouds, Cloud Platforms, Water (3-1).
+0x0CE7 to 0x0CEA (0004) = Coins, ? blocks (overwritten by 4 values starting at 0x09e5)
+0x0CEB to 0x0CEE (0004) = Player color (overwritten)
+0x0CEF to 0x0CF2 (0004) = 1-Up Mushrooms, Flagpole's Flag, Pirhana Plants, Green Koopas, Fireflower Stems, Beanstalk, Hammer Bros., Lakitu.
+0x0CF3 to 0x0CF6 (0004) = Size Mushrooms, acquired points, coins from blocks, Lifts, Castle Flag, Red Koopas, Jumpspring, "ooooo" Platforms (coin heaven), Flying Cheep-Cheeps (2-3), Spiny/Eggs, Fireballs.
+0x0CF7 to 0x0CFA (0004) = Blocks (while being hit), ? Blocks (while being hit), Goombas, Hammers, Buzzy Beetle, Bullet Bill.
+Underground
+0x0CFF to 0x0D02 (0004) = Pipes.
+0x0D03 to 0x0D06 (0004) = Blocks/Bricks.
+0x0D07 to 0x0D0A (0004) = Pre-level text (throughout entire game), topscreen text (underground).
+0x0D0B to 0x0D0E (0004) = Coins, ? blocks (overwritten by 4 values starting at 0x09e9)
+0x0D0F to 0x0D12 (0004) = Player color (overwritten)
+0x0D13 to 0x0D16 (0004) = 1-Up Mushroom, Pirhana Plants, Green Koopas, Fireflower Stems, ? Blocks (while being hit).
+0x0D17 to 0x0D1A (0004) = Fireballs, acquired points (100, 200, 400, etc.), coins from blocks, Red Koopas, Lifts.
+0x0D1B to 0x0D1E (0004) = Goombas, Buzzy Beetle, Brick Fragments, Bricks (while being hit).
+Dungeon
+0x0D23 to 0x0D26 (0004) = Chain (near axe on Bowser's bridge), "Thank You Mario..." text, Mushroom Platform tops (6-3).
+0x0D27 to 0x0D2A (0004) = Bricking, old (spent) blocks, mushroom platform support stalks (6-3).
+0x0D2B to 0x0D2E (0004) = Topscreen Text, "water", Bowser's Bridge, Clouds.
+0x0D2B to 0x0D32 (0004) = Coins, ? blocks (overwritten by 4 values starting at 0x09ed)
+0x0D33 to 0x0D36 (0004) = Player color (overwritten)
+0x0D37 to 0x0D3A (0004) = Blocks (while being hit), Fireflower Stem, Pirhana Plants, Green Koopas, Hammer Bros.
+0x0D3B to 0x0D3E (0004) = Fire/firechains, Podobos, Bowser's Flame, Coins (from blocks), Lifts, Toads, Flying Cheep-Cheeps, Princess Peach, Size Mushrooms
+0x0D3F to 0x0D42 (0004) = Goombas, Buzzy Beetle, Hammers.
+Miscellaneous/Caveat Palettes
+0x0D47 to 0x0D4A (0004) = Treetops, pipes and flagpole (5-1, 7-1, etc.)
+0x0D4F to 0x0D52 (0004) = Treetops, pipes, bridge railing, flagpole (3-1, etc.)
+0x0D57 to 0x0D5A (0004) = Mushroom platform tops, flagpole (4-3)
+0x0D5F to 0x0D62 (0004) = Bowser
+0x09D3 to 0x09D8 (0006) = Coin and ? block pallete cycle
+Characters
+0x005E8 to 0x----- (0001) = Color of Small/Big Mario's hat + outer clothing
+0x005E9 to 0x----- (0001) = Color of Small/Big Mario's skin
+0x005EA to 0x----- (0001) = Color of Small/Big Mario's hair + inner clothing
+0x005EC to 0x----- (0001) = Color of Small/Big Luigi's hat + outer clothing
+0x005ED to 0x----- (0001) = Color of Small/Big Luigi's skin
+0x005EE to 0x----- (0001) = Color of Small/Big Luigi's hair + inner clothing
+0x005F0 to 0x----- (0001) = Color of Fire Mario/Luigi's hat + outer clothing
+0x005F1 to 0x----- (0001) = Color of Fire Mario/Luigi's skin
+0x005F2 to 0x----- (0001) = Color of Fire Mario/Luigi's hair + inner clothing
+Tile Arrangement
+0x00B20 to 0x00BBB (009C) = Tiles of palette line 0
+0x00BBC to 0x00C73 (00B8) = Tiles of palette line 1
+0x00C74 to 0x00C9B (0028) = Tiles of palette line 2
+0x00C9C to 0x00CB3 (0018) = Tiles of palette line 3
+0x09ED0 to 0x09F90 (00C1) = Title
+Miscellaneous
+0x006C13 to 0x----- (0001) = In underground stages, this replaces the top two tiles of the sprite for bricks (while bumped).
+Text Values
+0x00765 to 0x00769 (0005) = "MARIO" text on top bar
+0x0076D to 0x00771 (0005) = "WORLD" text on top bar
+0x00774 to 0x00777 (0004) = "TIME" text on top bar
+0x0077E to 0x0077F (0002) = "x00" text on top bar (the coins sprite and the x sprite)
+0x00796 to 0x0079A (0005) = "WORLD" text on black screen
+0x007B3 to 0x007B9 (0007) = "TIME UP" text on black screen
+0x007C6 to 0x007CE (0009) = "GAME OVER" text on black screen
+0x007D3 to 0x007E7 (0015) = "WELCOME TO WARP ZONE!" text
+0x007FD to 0x00801 (0005) = "LUIGI" text on top bar
+0x09FB5 to 0x09FC2 (000D) = "© 1985 NINTENDO" text on title screen
+0x09FC6 to 0x09FD2 (000D) = "1 PLAYER GAME" text on title screen
+0x09FD6 to 0x09FE2 (000D) = "2 PLAYER GAME" text on title screen
+0x09FE6 to 0x09FE9 (0004) = "TOP-" text on title screen
+Mechanics
+Player physics/movement
+0x3450: (0xD0) Max running velocity left
+0x3451: (0xE4) Max walking velocity left
+0x3452: (0xED) Max swimming(only a guess!) velocity left
+0x3453: (0x30) Max running velocity right
+0x3454: (0x1C) Max walking velocity right
+0x3455: (0x13) Max swimming(only a guess!) velocity right
+Fireballs
+0x061E2 to 0x----- (0001) = Fireball Movement*
+0x061FB to 0x----- (0001) = Fireball Position*
+Fireball Movements:
+10: Explode on contact, but no damage
+13: Straight forward but bounces off blocks
+15: Straight forward
+19: Appear in air then bounce along top of sky
+1B: Explode on contact
+1C: Normal
+9F: Shoot a fireball then jump to launch into the air; jump and shoot a fireball in the air to
+either shoot up or shoot down
+CF: Kill first enemy even if you miss it
+FF: Explode on Mario, but no damage
+
+Fireball Positions:
+CA - 3 blocks above Mario
+D0 - 2 blocks above Mario
+F7 - Straight ahead, misses Goombas but sometimes hits Koopa Troopas
+F8 - Normal
+FC - Shoot much farther
+FE - Shoot slightly farther
+Moving Sprites
+This section not only applies to enemies like Goombas and Koopa Troopas, but to Mushrooms and Stars as well.
+0x05995 to 0x----- (0001) = Moving Sprite Stomp Reaction (part 1)*
+0x059E2 to 0x----- (0001) = Moving Sprite Stomp Reaction (part 2)*
+0x059E5 to 0x----- (0001) = Moving Sprite Stomp Reaction (part 3)*
+0x06006 to 0x----- (0001) = Moving Sprite Properties*
+Moving Sprite Stomp Reactions (part 1):
+01: Fall down
+49: Morph to turtle; keep stomping to change to red, then green and repeats
+
+Moving Sprite Stomp Reactions (part 2):
+00: Don't flatten but turn around
+01: Unflatten quickly (can bounce off of multiple times to get 1ups)
+02: Unflatten quickly (no multi-bounce)
+30: Disappear in 30 seconds
+FF: Stay flat and don't disappear 
+
+Moving Sprite Stomp Reactions (part 3):
+04: Normal
+09: Flatten then unflatten while falling 
+29: Fall left
+49: Small spring
+69: Fall right
+89: Walk around flat
+
+Moving Sprite Properties:
+03: Normal
+17: Everything is bouncing around and giving you lots of points.
+38: 17 without the points
+39: Enemies bounce after you
+3B: Everything bounces until it hits the lowest ground (cracked blocks) then it is carried away
+and can't hurt you.
+42: Most things are scared and bounce away!
+43: Most things are scared and run away even through bricks; jump off cliffs and then bounce if
+they land on ground
+4D: 43 with less bounce
+54: Everything runs very quickly your way through anything but doesn't turn around
+56: Everything runs quickly your way through anything but does not turn around
+E0: Everything that touches ground bounces
+E1: Everything that would bounce in E0 falls and some things walk through walls.
+E6: You can't stomp anything but you bounce off ie. goombas flatten then pop back up
+FF: Everything falls through the floor
+Sound effects
+Jump sound
+0x03529 (0001) = On Small Mario jump
+0x03522 (0001) = On Big Mario jump
+Jump sounds:
+80: Small jump sound effect
+01: Big jump sound effect
