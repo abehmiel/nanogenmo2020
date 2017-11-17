@@ -178,7 +178,8 @@ function objStatePhrase(val, i, text)
             else
                 phrase = phrase.."and it seems like it was really him! "
             end
- --       elseif val == 0xC4 then
+        elseif val == 64 and i == 3 then
+            phrase = phrase.."Mario grabs the axe and the bridge falls! Bowser falls into the lava. "
         elseif val == 0x84 then
             phrase = phrase.."Mario kicks a "..target.." shell! "
         end
@@ -332,16 +333,18 @@ end
 
 function levelPalettePhrase(pal)
     local moretext = ""
-    if pal == 0x00 then
+    if pal == 0x01 and world ~= 3 and world ~= 5 and world ~= 6 and world ~= 7 then
         moretext = moretext.."It's a sunny day in the Mushroom Kingdom. "
-    elseif pal == 0x01 then
+    elseif pal == 0x00 then
         moretext = moretext.."Mario finds himself underwater! "
-    elseif pal == 0x02 then
+    elseif pal == 0x01 and (world == 5 or world == 7)  then
+        moretext = moretext.."It's a freezing cold day in the Mushroom Kingdom. "
+    elseif pal == 0x01 and (world == 3 or world == 6)  then
         moretext = moretext.."It's night-time in the Mushroom Kingdom. "
-    elseif pal == 0x03 then
+    elseif pal == 0x02 then
         moretext = moretext.."Mario finds himself underground. "
-    elseif pal == 0x04 then
-        moretext = moretext.."Mario is inside Bowser's castle! "
+    elseif pal == 0x03 then
+        moretext = moretext.."Mario is inside Bowser's castle. "
     end 
     return moretext 
 end
@@ -397,7 +400,12 @@ function fortPhrase(lv, wo)
     elseif lv == 4 then
         phrase = phrase.."Mario enters the castle. "
     elseif (wo ~= 1 and lv == 1) then
-        phrase = phrase.."Mario leaves the castle. "
+        if world < 8 then
+            phrase = phrase..'Toad says, "Thank you Mario! But our princess is in another castle!" '
+            phrase = phrase.."Mario leaves the castle. "
+        else
+            phrase = phrase.."It's Princess Peach! Mario has finally saved her from Bowser. She says, \"Thank you Mario! Your quest is over. Push button B to select a world.\" Mario leaves the castle. "
+        end
     end
     text = safeAppend(text, phrase)
     return text
@@ -455,7 +463,6 @@ function frameRuleUpdate()
     powerUpState = memory.readbyte(0x0756)
     powerUpDrawn = memory.readbyte(0x0014)
     powerUpType = memory.readbyte(0x0039)
-    thisPalette = memory.readbyte(0x0773)
     isPreLevel = memory.readbyte(0x0757)
 
 
@@ -494,7 +501,7 @@ function frameRuleUpdate()
 
     --debug
     --emu.message(objStates[1]..objStates[2]..objStates[3]..objStates[4]..objStates[5])
-    --emu.message(isPreLevel)
+    --emu.message(thisPalette)
 
 end
 
@@ -543,6 +550,7 @@ while true do
     playerView = memory.readbyte(0x00B5)
     brickState1 = memory.readbyte(0x008F)
     brickState2 = memory.readbyte(0x0090)
+    thisPalette = memory.readbyte(0x074E)
 
     --Check bricks
     if (brickState1 ~= oldBrickState1 or brickState2 ~= oldBrickState2) and 
@@ -623,7 +631,7 @@ while true do
         text = nil
     end 
 
-    emu.frameadvance() -- This essentially tells FCEUX to keep running.
     brickon = 0
+    emu.frameadvance() -- This essentially tells FCEUX to keep running.
 end
 

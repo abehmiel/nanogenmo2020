@@ -105,6 +105,7 @@ RAM	Information
 0x20 - BulletBill / CheepCheep / hammer_bro stomped
 0x22 - killed with fire or star
 0x23 - bowser_killed
+0x40 - bowser falling
 0xC4 - koopa stomped falling
 0x84 - koopa or buzzyBeetle Stomped and moving;
 0xFF - Will kill them off (like getting hit by a star)
