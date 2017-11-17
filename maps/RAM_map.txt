@@ -101,6 +101,7 @@ RAM	Information
 0x00 - Does _not_ mean they don't exist
 0x01 - falling_enemy or Bullet_Bill drawn(not killed yet).
 0x04 - Enemy Stomped
+0x05 - Fireworks
 0x20 - BulletBill / CheepCheep / hammer_bro stomped
 0x22 - killed with fire or star
 0x23 - bowser_killed
@@ -300,7 +301,7 @@ Based on the current horizontal velocity, this takes on different values:
 0 - Small
 1 - Big
 >2 - fiery
-0x075E	Set to 1 during "prelevel" screen
+0x0757	Set to 1 during "prelevel" screen
 0x075A	Lives
 0x075E	Coins
 0x075F	World
