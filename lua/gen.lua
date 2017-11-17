@@ -494,7 +494,7 @@ function frameRuleUpdate()
 
     --debug
     --emu.message(objStates[1]..objStates[2]..objStates[3]..objStates[4]..objStates[5])
-    emu.message(isPreLevel)
+    --emu.message(isPreLevel)
 
 end
 
