@@ -1,7 +1,7 @@
 -- hubcapp's (totally unrelated) xpos split timer script https://raw.githubusercontent.com/Hubcapp/smb1-timer-splits-xpos/master/smb1_timer_splits_xpos.lua was helpful in development
 
 -- Initialize story file
-file = io.open('story.txt','w')
+file = io.open('../txt/story.txt','w')
 
 objLookup = {[0x00] = "Green Koopa Troopa",
 			 [0x01] = "Red Koopa Troopa",
@@ -174,14 +174,14 @@ function objStatePhrase(val, i, text)
         elseif val == 0x23 then
             phrase = phrase.."Mario defeats "..article..target..", "
             if world ~= 8 then
-                phrase = phrase.."which was disguised as Bowser! "
+                phrase = phrase.."which was disguised as Bowser. "
             else
-                phrase = phrase.."and it seems like it was really him! "
+                phrase = phrase.."and it seems like it was really him. "
             end
-        elseif val == 64 and i == 3 then
-            phrase = phrase.."Mario grabs the axe and the bridge falls! Bowser falls into the lava. "
+        elseif val == 64 and (i == 3 or i == 1) then
+            phrase = phrase.."Mario grabs the axe and the bridge falls. Bowser falls into the lava. "
         elseif val == 0x84 then
-            phrase = phrase.."Mario kicks a "..target.." shell! "
+            phrase = phrase.."Mario kicks a "..target.." shell. "
         end
 
     	text = safeAppend(text, phrase)
@@ -246,7 +246,7 @@ end
 function starPhrase(starStatus, oldStarStatus, text)
     local phrase = ""
     if starStatus == 1 and oldStarStatus == 0 then
-        phrase = phrase.."Mario obtained a star and became invincible! "
+        phrase = phrase.."Mario obtained a star and became invincible. "
     else
         phrase = phrase.."Mario's star power has dissipated.  "
     end
@@ -266,7 +266,7 @@ end
 function brickPhrase(text)
     local phrase = "Mario hits a brick with his head"
     if powerUpState > 1 then
-        phrase = phrase.." and destroys it! "
+        phrase = phrase.." and destroys it. "
     else
         phrase = phrase..". "
     end
@@ -294,8 +294,10 @@ function floatPhrase(floatState, spriteState, text)
     local phrase = ""
     if floatState == 0x00 then
         phrase = phrase.."Mario lands on solid ground. "
-    elseif floatState == 0x01 and spriteState ~= 0x0B then
-        phrase = phrase.."Mario jumps! "
+    elseif floatState == 0x01 and spriteState ~= 0x0B and thisPalette ~= 0x00 then
+        phrase = phrase.."Mario jumps. "
+--    elseif floatPhrase == 0x01 and spriteState ~= 0x0B and thisPalette == 0x00 then
+--        phrase = phrase.."Mario swims up off the sea floor. "
     elseif floatState == 0x02 then
         phrase = phrase.."Mario falls off an edge. "
     elseif floatState == 0x03 then
@@ -336,7 +338,7 @@ function levelPalettePhrase(pal)
     if pal == 0x01 and world ~= 3 and world ~= 5 and world ~= 6 and world ~= 7 then
         moretext = moretext.."It's a sunny day in the Mushroom Kingdom. "
     elseif pal == 0x00 then
-        moretext = moretext.."Mario finds himself underwater! "
+        moretext = moretext.."Mario finds himself underwater. "
     elseif pal == 0x01 and (world == 5 or world == 7)  then
         moretext = moretext.."It's a freezing cold day in the Mushroom Kingdom. "
     elseif pal == 0x01 and (world == 3 or world == 6)  then
@@ -347,6 +349,19 @@ function levelPalettePhrase(pal)
         moretext = moretext.."Mario is inside Bowser's castle. "
     end 
     return moretext 
+end
+
+function swimPhrase(text)
+    local phrase = ""
+    if swimState == 0x04 then 
+        phrase = phrase.."Mario tries to swim upwards against the vortex. "
+    elseif swimState == 0x09 then 
+        phrase = phrase.."A strong water vortex pulls down on Mario. "
+    elseif swimState == 0x0D then
+        phrase = phrase.."Mario treads water upwards. "
+    end
+    text = safeAppend(text, phrase)
+    return text
 end
 
 
@@ -372,7 +387,7 @@ function seePowerUpPhrase(pwr, text)
     elseif pwr == 3 then
         target = "1-Up"
     end
-    phrase = phrase..target.." comes out! "
+    phrase = phrase..target.." comes out. "
     text = safeAppend(text, phrase)
     return text
 end 
@@ -381,8 +396,10 @@ function runPhrase(vel, text)
     local phrase = ""
     if vel == 2 then
         spd = "running. "
-    elseif vel == 4 then
+    elseif vel == 4 and thisPalette ~= 0x00 then
         spd = "walking. "
+    elseif vel == 4 and thisPalette == 0x00 then
+        spd = "paddling.  "
     elseif vel == 7 then
         spd = "to slow down. "
     end
@@ -418,16 +435,16 @@ function powerUpPhrase(pwr, oldpwr, text)
     elseif pwr == 0 and (oldpwr == 2)  then
         phrase = phrase.."Mario lost his fire flower power. "
     elseif pwr == 1 and (oldpwr == 0)  then
-        phrase = phrase.."Mario obtained a super mushroom and grew big! "
+        phrase = phrase.."Mario obtained a super mushroom and grew big. "
     elseif pwr == 2 and (oldpwr == 1)  then
-        phrase = phrase.."Mario obtained a fire flower and changed his overalls! "
+        phrase = phrase.."Mario obtained a fire flower and changed his overalls. "
     end
     text = safeAppend(text, phrase)
     return text
 end
 
 function upPhrase(text)
-    text = safeAppend(text, "Mario earns an extra life! ")
+    text = safeAppend(text, "Mario earns an extra life. ")
     return text
 end
 
@@ -501,7 +518,7 @@ function frameRuleUpdate()
 
     --debug
     --emu.message(objStates[1]..objStates[2]..objStates[3]..objStates[4]..objStates[5])
-    --emu.message(thisPalette)
+    --emu.message(memory.readbyte(0x0709))
 
 end
 
@@ -551,6 +568,16 @@ while true do
     brickState1 = memory.readbyte(0x008F)
     brickState2 = memory.readbyte(0x0090)
     thisPalette = memory.readbyte(0x074E)
+    
+    --check swim state
+    if thisPalette == 0x00 then
+        swimState = memory.readbyte(0x0709)
+        if swimState ~= oldSwimState and oldSwimState ~= nil  then
+            text = swimPhrase(text)
+        end 
+        oldSwimState = swimState 
+    end
+
 
     --Check bricks
     if (brickState1 ~= oldBrickState1 or brickState2 ~= oldBrickState2) and 
