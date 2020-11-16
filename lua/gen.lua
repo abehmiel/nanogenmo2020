@@ -1,4 +1,6 @@
 -- hubcapp's (totally unrelated) xpos split timer script https://raw.githubusercontent.com/Hubcapp/smb1-timer-splits-xpos/master/smb1_timer_splits_xpos.lua was helpful in development
+-- as was the following RAM table: https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map
+-- and the ROM disassemby: https://gist.github.com/1wErt3r/4048722#file-smbdis-asm
 
 -- Initialize story file
 file = io.open('../txt/story.txt','w')
@@ -47,9 +49,8 @@ objLookup = {
 	[0x2F] = "vine",
 	[0x30] = "flagpole",
 	[0x32] = "jump spring",
-	[0x33] = "Bullet Bill Cannon",
 	[0x34] = "Warp Zone",
-	[0x35] = "Toad",
+	[0x35] = "Mushroom Retainer",
 	[0x37] = "Goombas in a row",
 	[0x38] = "Goombas in a row",
 	[0x3A] = "skewed Goomba",
@@ -101,9 +102,8 @@ objArticleLookup = {
 	[0x2F] = "a ",
 	[0x30] = "a ",
 	[0x32] = "a ",
-	[0x33] = "a ",
 	[0x34] = "a ",
-	[0x35] = "",
+	[0x35] = "a ",
 	[0x37] = "two ",
 	[0x38] = "three ",
 	[0x3A] = "a ",
@@ -117,12 +117,16 @@ lastRunningScore = 0
 powerUpState = 0
 world = nil
 level = nil
+-- oldWorld = 0
+oldLevel = 0
 oldLives = 3
 floatState = 0x00
 oldDrawn = {0, 0, 0, 0, 0}
 oldviews = {0, 0, 0, 0, 0}
 oldObjects = {0, 0, 0, 0, 0}
 oldObjStates = {0, 0, 0, 0, 0}
+oldObjCollisionStates = {0, 0, 0, 0, 0}
+oldHammerCollisionStates = {0, 0, 0, 0, 0, 0, 0, 0, 0}
 oldBrickState1 = 0
 oldBrickState2 = 0
 brickon = 0
@@ -138,40 +142,101 @@ function getScore()
 end
 
 function getObjects()
+
     if drawn ~= nil then
         oldDrawn = drawn
     end
+
     if objects ~= nil then
         oldObjects = objects
     end
+
     if views ~= nil then
         oldViews = views
     end
+
     if objStates ~= nil then
         oldObjStates = objStates
     end
-    drawn = {memory.readbyte(0x000F), memory.readbyte(0x0010), 
-             memory.readbyte(0x0011), memory.readbyte(0x0012), 
-             memory.readbyte(0x0013)}
-    objects = {memory.readbyte(0x0016), memory.readbyte(0x0017),
-               memory.readbyte(0x0018), memory.readbyte(0x0019),
-               memory.readbyte(0x001A)}
-    views = {memory.readbyte(0x00B6), memory.readbyte(0x00B7),
-               memory.readbyte(0x00B8), memory.readbyte(0x00B9),
-               memory.readbyte(0x00BA)}
-    objStates = {memory.readbyte(0x01E), memory.readbyte(0x01F),
-                 memory.readbyte(0x020), memory.readbyte(0x021),
-                 memory.readbyte(0x022)}
+
+    if objCollisionStates ~= nil then
+        oldObjCollisionStates = objCollisionStates
+    end
+
+    if hammerCollisionStates ~= nil then
+        oldHammerCollisionStates = hammerCollisionStates
+    end
+
+    drawn = {
+        memory.readbyte(0x000F),
+        memory.readbyte(0x0010),
+        memory.readbyte(0x0011),
+        memory.readbyte(0x0012), 
+        memory.readbyte(0x0013)
+    }
+    objects = {
+        memory.readbyte(0x0016),
+        memory.readbyte(0x0017),
+        memory.readbyte(0x0018),
+        memory.readbyte(0x0019),
+        memory.readbyte(0x001A)
+    }
+    views = {
+        memory.readbyte(0x00B6),
+        memory.readbyte(0x00B7),
+        memory.readbyte(0x00B8),
+        memory.readbyte(0x00B9),
+        memory.readbyte(0x00BA)
+    }
+    objStates = {
+        memory.readbyte(0x01E),
+        memory.readbyte(0x01F),
+        memory.readbyte(0x020),
+        memory.readbyte(0x021),
+        memory.readbyte(0x022)
+    }
+    objCollisionStates = {
+        memory.readbyte(0x0491),
+        memory.readbyte(0x0492),
+        memory.readbyte(0x0493),
+        memory.readbyte(0x0494),
+        memory.readbyte(0x0495)
+    }
+    hammerCollisionStates = {
+        memory.readbyte(0x06be),
+        memory.readbyte(0x06bf),
+        memory.readbyte(0x06c0),
+        memory.readbyte(0x06c1),
+        memory.readbyte(0x06c2),
+        memory.readbyte(0x06c3),
+        memory.readbyte(0x06c4),
+        memory.readbyte(0x06c5),
+        memory.readbyte(0x06c6),
+    }
+                        
     for i, value in ipairs(objects) do
 		if oldDrawn[i] == 0 and drawn[i] == 1 then
 			text = objPhrase(value, text)
     	end
     end
+
     for i, value in ipairs(objStates) do
         if oldObjStates[i] < objStates[i] then
             text = objStatePhrase(value, i, text)
         end
-    end       
+    end
+
+    for i, value in ipairs(objCollisionStates) do
+        if oldObjCollisionStates[i] < objCollisionStates[i] then
+            text = objCollisionPhrase(value, i, text)
+        end
+    end
+
+    for i, value in ipairs(hammerCollisionStates) do
+        if oldHammerCollisionStates[i] < hammerCollisionStates[i] then
+            text = hammerCollisionPhrase(text)
+        end
+    end
 end
 
 function objPhrase(val, text)
@@ -179,6 +244,9 @@ function objPhrase(val, text)
 	local target = objLookup[val]
     local article = objArticleLookup[val]
 	if target ~= nil then
+        if target == "Mushroom Retainer" and world == 8 then
+            target = "Princess Peach"
+        end
 		phrase = phrase..article..target.." in the distance. "
     	text = safeAppend(text, phrase)
     	return text
@@ -186,20 +254,29 @@ function objPhrase(val, text)
 end
 
 function objStatePhrase(val, i, text)
+
 	local phrase = ""
 	local target = objLookup[objects[i]]
     local article = objArticleLookup[objects[i]]
+
+    kickedShellCheck = 0
+    for j, objState in ipairs(objStates) do
+        if i ~= j and objState == 0x84 then
+            kickedShellCheck = 1
+        end
+    end
+
 	if target ~= nil then
         if val == 0x04 or val == 0x20 or val == 0xC4 then
             phrase = phrase.."Mario stomps on "..article..target..". "
         elseif val == 0x22 then
             if brickon == 1 then
-                phrase = phrase.."Mario's bash underneath a block defeats "..article..target..". "
-            elseif starStatus == 0 and powerUpState >= 2 then
+                phrase = phrase.."Mario's bash from underneath a block defeats "..article..target..". "
+            elseif starStatus == 0 and powerUpState >= 2 and kickedShellCheck == 0 then
                 phrase = phrase.."Mario's fireball defeats "..article..target..". "
-            elseif starStatus == 0 then
+            elseif starStatus == 0 and kickedShellCheck == 1 then
                 phrase = phrase.."The kicked shell defeats "..article..target..". "
-            else
+            elseif starStatus == 1 then
                 phrase = phrase.."Mario's star power defeats "..article..target..". " 
             end
         elseif val == 0x23 then
@@ -220,6 +297,39 @@ function objStatePhrase(val, i, text)
 	end
 end
 
+function  objCollisionPhrase(val, i, text)
+
+	local phrase = ""
+	local target = objLookup[objects[i]]
+    local article = objArticleLookup[objects[i]]
+    local state = objStates[i] 
+    local oldState = oldObjStates[i]
+
+    -- check for enemy conditions in ROM
+    if (starStatus == 0) and (iFrameStatus == 0 or oldIFrameStatus == 0) and 
+        (((playerYSpeed <= 0) and (pal ~= 0x00)) or (pal == 0x00)) and 
+        (state == 0x00 or (state == 0x84 and (oldState ~= 0x04))) then
+        if state == 0x84 then
+            target = target.." shell"
+        end
+        phrase = phrase.."An enemy "..target.." attacks Mario! "
+    end
+
+    text = safeAppend(text, phrase)
+    return text
+end
+
+function  hammerCollisionPhrase(text)
+
+	local phrase = ""
+
+    if (starStatus == 0) and (iFrameStatus == 0) then
+        phrase = phrase.."Mario is hit by a flying hammer! "
+    end
+    text = safeAppend(text, phrase)
+    return text
+end
+
 function checkScore(sc, oldsc)
 	if (sc ~= nil) and (oldsc ~= nil) and (sc > oldsc) then
 		diff = sc - oldsc
@@ -229,9 +339,35 @@ function checkScore(sc, oldsc)
 	return diff
 end
 
+function fortPhrase(lv, wo)
+
+    local phrase = ""
+
+    if lv <= 3 and lv ~= 1 then
+        phrase = phrase.."Mario enters the fort. "
+    elseif lv == 4 then
+        phrase = phrase.."Mario enters the castle. "
+    elseif (wo ~= 1 and lv == 1) then
+        if oldLevel == 4 then
+            phrase = phrase..'The Mushroom Retainer says, "Thank you Mario! But our princess is in another castle!" '
+            phrase = phrase.."Mario leaves the castle, ready to continue his search for the princess. "
+        elseif oldLevel < 4 then
+            phrase = phrase..'The pipe was a warp zone! Mario exits the pipe, '
+            phrase = phrase..'looks around and finds himself at the back door of a castle, '
+            phrase = phrase.."ready to continue his search for the princess. "
+        end
+    end
+
+    text = safeAppend(text, phrase)
+    return text
+
+end
+
 function levelPhrase(lv, wo, text)
+
     local phrase = ""
     local fort = fortPhrase(lv, wo)
+
     if fort ~= nil then 
         phrase = phrase..fort.."\n\nChapter "..wo.."-"..lv.." \n\n"
     else
@@ -280,13 +416,60 @@ function getStarStatus()
     end
 end
 
+function getIFrameStatus()
+    if memory.readbyte(0x079E) > 0 then
+        return 1
+    else 
+        return 0
+    end
+end
+
+function getJumpSpringStatus()
+    if memory.readbyte(0x0786) > 0 then
+        return 1
+    else
+        return 0
+    end
+end
+
 function starPhrase(starStatus, oldStarStatus, text)
     local phrase = ""
     if starStatus == 1 and oldStarStatus == 0 then
         phrase = phrase.."Mario obtained a star and became invincible. "
     else
-        phrase = phrase.."Mario's star power has dissipated.  "
+        phrase = phrase.."Mario's star power has dissipated and he is no longer impervious to enemy damage. "
     end
+    text = safeAppend(text, phrase)
+    return text
+end
+
+function iFramePhrase(iFrameStatus, oldIFrameStatus, text)
+    local phrase = ""
+    if iFrameStatus == 1 and oldIFrameStatus == 0 then
+        phrase = phrase.."Mario became temporarily invincible after losing his power-up. "
+    else
+        phrase = phrase.."Mario is no longer impervious to enemy damage. "
+    end
+    text = safeAppend(text, phrase)
+    return text
+end
+
+function jumpSpringPhrase(jumpSpringStatus, oldJumpSpringStatus, text)
+    local phrase = ""
+
+    if jumpSpringStatus == 1 and oldJumpSpringStatus == 1 and playerYSpeed == -12 and bounce == 0 then
+        bounce = 1
+        phrase = phrase.."Mario bounds high into the air! "
+    elseif playerYSpeed < 0 and bounce == 0 then
+        bounce = 1
+        phrase = phrase.."Mario bounces a little bit. "
+    end
+
+    if jumpSpringStatus == 1 and oldJumpSpringStatus == 0 then
+        bounce = 0
+        phrase = phrase.."Mario jumps onto on the spring and prepares for a big jump. "
+    end
+
     text = safeAppend(text, phrase)
     return text
 end
@@ -312,8 +495,18 @@ function brickPhrase(text)
 end
 
 function timePhrase(curtime, text)
-    local phrase = "Mario glanced at his watch and realized that there is now "..curtime..
-                   " units of time remaining in this stage. "
+    local phrase = ""
+    if curtime ~= 0 then
+        phrase = phrase.."Mario glanced at his watch and realized that there are now "..curtime..
+             " units of time remaining in this stage. "
+
+        if curtime == 100 then
+            phrase = phrase.."Mario is running out of time to finish the stage! His pulse quickens! "
+        end
+    else
+        phrase = phrase.."Mario has run out of time to finish the level! A mysterious force destroys him. "
+    end
+
     text = safeAppend(text, phrase)
     return text
 end
@@ -447,37 +640,35 @@ function runPhrase(vel, text)
     end
 end
 
-function fortPhrase(lv, wo)
+function eventMusicPhrase(text)
+
     local phrase = ""
-    if lv <= 3 and lv ~= 1 then
-        phrase = phrase.."Mario enters the fort. "
-    elseif lv == 4 then
-        phrase = phrase.."Mario enters the castle. "
-    elseif (wo ~= 1 and lv == 1) then
-        if world < 8 then
-            phrase = phrase..'Toad says, "Thank you Mario! But our princess is in another castle!" '
-            phrase = phrase.."Mario leaves the castle, ready to continue his search for the princess. "
-        else
-            phrase = phrase.."It's Princess Peach! Mario has finally saved her from Bowser. "
-            phrase = phrase.."She says, \"Thank you Mario! Your quest is over. Push button B to select a world.\""
-            phrase = phrase.."Mario triumphantly leaves the castle. "
-        end
+   
+    if eventMusic == 4 then
+        phrase = phrase.."It's Princess Peach! Mario has finally saved her from Bowser. "
+        phrase = phrase.."She says, \"Thank you Mario! Your quest is over. Push button B to select a world.\""
+        phrase = phrase.."Mario triumphantly leaves the castle with the Princess. "
     end
+
     text = safeAppend(text, phrase)
     return text
+
 end
 
 function powerUpPhrase(pwr, oldpwr, text)
+
     local phrase = ""
+
     if pwr == 0 and (oldpwr == 1)  then
         phrase = phrase.."Mario lost his super mushroom power. "
     elseif pwr == 0 and (oldpwr == 2)  then
         phrase = phrase.."Mario lost his fire flower power. "
     elseif pwr == 1 and (oldpwr == 0)  then
-        phrase = phrase.."Mario obtained a super mushroom and grew big. "
+        phrase = phrase.."Mario obained a super mushroom and grew big. "
     elseif pwr == 2 and (oldpwr == 1)  then
         phrase = phrase.."Mario obtained a fire flower and changed his overalls. "
     end
+
     text = safeAppend(text, phrase)
     return text
 end
@@ -503,15 +694,6 @@ function frameRuleUpdate()
 
     gameTimer = memory.readbyte(0x07F8)*100 + memory.readbyte(0x07F9)*10 + memory.readbyte(0x07FA);
 
-    if oldLevel ~= level then
-        text = levelPhrase(level, world, text)
-    end
-    oldLevel = level
-
-    if level == nil then
-        oldLevel = nil
-    end
-    
     coinsBuffer = 0
     scoreBuffer = 0
     world = memory.readbyte(0x075F)+1
@@ -521,10 +703,19 @@ function frameRuleUpdate()
     powerUpType = memory.readbyte(0x0039)
     isPreLevel = memory.readbyte(0x0757)
 
-
     if (level > 2 and (world == 1 or world == 2 or world == 4 or world == 7)) then --the cute animation where you go into a pipe before starting the level counts as a level internally
         level = level - 1; --for worlds with that cutscene, we have to subtract off that cutscene level
     end;
+
+    if oldLevel ~= level then
+        text = levelPhrase(level, world, text)
+    end
+    oldLevel = level
+
+    if level == nil then
+        oldLevel = nil
+    end
+    
     lives = memory.readbyte(0x075A)+1;
     if (lives == oldLives + 1) and oldLives ~= nil and oldLives ~= 256 and lives ~= 256 then
         text = upPhrase(text)
@@ -552,12 +743,10 @@ function frameRuleUpdate()
         text = seePowerUpPhrase(powerUpType, text)
     end
     oldPowerUpDrawn = powerUpDrawn
-    --oldPowerUpState = powerUpState
 
 
-    --debug
-    --emu.message(objStates[1]..objStates[2]..objStates[3]..objStates[4]..objStates[5])
-    --emu.message(memory.readbyte(0x0702))
+    -- debug
+    -- emu.message(objStates[1]..objStates[2]..objStates[3]..objStates[4]..objStates[5])
 
 end
 
@@ -581,17 +770,21 @@ while true do
     floatState = memory.readbyte(0x001D) --0x00: on solid, 0x01: airborne jump
                                          --0x02: airborne fall, 0x03: sliding down flagpole
     blockColl = memory.readbyte(0x0490) --0xFF: off, 0xFE: collision
-    enemyColl = memory.readbyte(0x0491)
+    miscColl = memory.readbyte(0x06be) -- misc object collision (Hammers, jumping coins)
     fireballCount = memory.readbyte(0x06CE)
     spriteState = memory.readbyte(0x000E) 
     runVelocity = memory.readbyte(0x070C) --max: 0x30
     duckState = memory.readbyte(0x0714)
     walkAnimation = memory.readbyte(0x0702) --0x30 is skidding
+    playerYSpeed = memory.readbytesigned(0x9f)
     starStatus = getStarStatus()
+    iFrameStatus = getIFrameStatus()
+    jumpSpringStatus = getJumpSpringStatus()
     playerView = memory.readbyte(0x00B5)
     brickState1 = memory.readbyte(0x008F)
     brickState2 = memory.readbyte(0x0090)
     thisPalette = memory.readbyte(0x074E)
+    eventMusic = memory.readbyte(0xFC)
     
     --check swim state
     if thisPalette == 0x00 then
@@ -613,7 +806,7 @@ while true do
     oldBrickState2 = brickState2
 
     --Enemies/Objects
-    getObjects() --drawn, objects, oldDrawn, oldObjects
+    getObjects() --drawn, objects, collisions, hammers, oldDrawn, oldObjects, etc
 
     --Check player state
     if (spriteState ~= oldSpriteState) and (oldSpriteState ~= nil) then
@@ -650,13 +843,14 @@ while true do
         text = viewPhrase(playerView, text)
     end 
     oldPlayerView = playerView
-
+    
+    -- fireball thrown`
     if fireballCount ~= oldFireballCount and oldFireballCount ~= nil then
         text = fireballPhrase(fireballCount, oldFireballCount, text)
     end
     oldFireballCount = fireballCount
 
-    --Check velocity
+    --Check run velocity
     if ((runVelocity ~= oldRunVelocity) and (oldRunVelocity ~= nil)) then
         text = runPhrase(runVelocity, text)
     end
@@ -675,14 +869,31 @@ while true do
     end
     oldStarStatus = starStatus
 
+    --Check i-frame Status
+    if iFrameStatus ~= oldIFrameStatus and oldIFrameStatus ~= nil then
+        text = iFramePhrase(iFrameStatus, oldIFrameStatus, text)
+    end
+    oldIFrameStatus = iFrameStatus
+
+    --Check jump spring Status
+    if jumpSpringStatus ~= 0 and oldJumpSpringStatus ~= nil then
+        text = jumpSpringPhrase(jumpSpringStatus, oldJumpSpringStatus, text)
+    end
+    oldJumpSpringStatus = jumpSpringStatus
+
+    --Check world end fanfare music Status
+    if eventMusic ~= oldEventMusic and oldEventMusic ~= nil then
+        text = eventMusicPhrase(text)
+    end
+    oldEventMusic = eventMusic
+
 	--Write text
     if text ~= nil then
         emu.message(text)
-        file:write(text)
+        -- file:write(text)
         text = nil
     end 
 
     brickon = 0
     emu.frameadvance() -- This essentially tells FCEUX to keep running.
 end
-
