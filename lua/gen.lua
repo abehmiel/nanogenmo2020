@@ -2,7 +2,7 @@
 -- as was the following RAM table: https://datacrystal.romhacking.net/wiki/Super_Mario_Bros.:RAM_map
 -- and the ROM disassemby: https://gist.github.com/1wErt3r/4048722#file-smbdis-asm
 
--- USER OPTIONS
+------ USER OPTIONS ---------
 
 start_with_100_lives   = true
 log_messages_to_screen = true
@@ -121,6 +121,7 @@ objArticleLookup = {
 	[0x3C] = "three "
 }
 
+-- returns true if obj is in objects
 function objectCheck(obj)
     ret = false
     for i, o in ipairs(objects) do
@@ -134,6 +135,7 @@ end
 --Initialize stuff
 runningScore = 0
 lastRunningScore = 0
+bookin_it = 0
 powerUpState = 0
 oldGameState = 0
 world = nil
@@ -148,9 +150,11 @@ oldviews = {0, 0, 0, 0, 0}
 oldObjects = {0, 0, 0, 0, 0}
 oldObjStates = {0, 0, 0, 0, 0}
 oldObjCollisionStates = {0, 0, 0, 0, 0}
+ee_col = {0, 0, 0, 0, 0}
 oldHammerCollisionStates = {0, 0, 0, 0, 0, 0, 0, 0, 0}
 oldBrickState1 = 0
 oldBrickState2 = 0
+negateJumpPhrase = 0
 brickon = 0
 
 function getScore()
@@ -182,6 +186,7 @@ function getObjects()
 
     if objCollisionStates ~= nil then
         oldObjCollisionStates = objCollisionStates
+        ee_col = {0, 0, 0, 0, 0}
     end
 
     if hammerCollisionStates ~= nil then
@@ -248,7 +253,7 @@ function getObjects()
     end
 
     for i, value in ipairs(objCollisionStates) do
-        if oldObjCollisionStates[i] < objCollisionStates[i] then
+        if oldObjCollisionStates[i] < objCollisionStates[i] and oldObjCollisionStates[i] == 0 then
             text = objCollisionPhrase(value, i, text)
         end
     end
@@ -329,27 +334,59 @@ function  objCollisionPhrase(val, i, text)
     local article = objArticleLookup[obj]
     local state = objStates[i] 
     local oldState = oldObjStates[i]
+    local collision_type = objCollisionStates[i] 
 
-    -- check for enemy conditions in ROM
-    if (starStatus == 0) and (iFrameStatus == 0 or oldIFrameStatus == 0) and 
-        (((playerYSpeed <= 0) and (pal ~= 0x00)) or (pal == 0x00)) and 
-        (state == 0x00 or (state == 0x84 and (oldState ~= 0x04))) then
-        if state == 0x84 then
-            target = target.." shell"
-        end
+    -- player-enemy collisions
+    if AND(collision_type, 0x01) == 1 then
 
-        if (iFrameStatus == 1) and (oldObj ~= 0x0E or oldObj ~= 0x0F or oldObj ~= 0x10) then
-            phrase = phrase.."An enemy "..target.." attacks Mario! "
         -- handle demoted koopa paratroopas
-        elseif starStatus == 0 and (iFrameStatus == 0 and oldIFrameStatus == 0) and
-            ((oldObj == 0x0E and obj == 0x00) or
-            (oldObj == 0x0F and obj == 0x01) or 
-            (oldObj == 0x10 and obj == 0x00)) and (state == 0xd5 or state == 0x00) then
+        if starStatus == 0 and (iFrameStatus == 0 and oldIFrameStatus == 0) and
+            (
+                (oldObj == 0x0E and obj == 0x00) or 
+                (oldObj == 0x0F and obj == 0x01) or 
+                (oldObj == 0x10 and obj == 0x00)
+            )
+            and (state == 0xd5 or state == 0x00) then
 
             phrase = phrase.."Mario stomps on the "..objLookup[oldObj].." and demotes it to a "..objLookup[obj]..". "
 
-        else
-            phrase = phrase.."An enemy "..target.." attacks Mario! "
+        -- check for enemy conditions in ROM
+        elseif (starStatus == 0) and 
+            (iFrameStatus == 0 or oldIFrameStatus == 0) and 
+            (((playerYSpeed <= 0) and (pal ~= 0x00)) or (pal == 0x00)) and 
+            (state == 0x00 or (state == 0x84 and oldstate ~= 084)) then
+
+            if state == 0x84 then
+                target = target.." shell"
+            end
+
+            if (iFrameStatus == 1 or (iFrameStatus == 0 and powerUpState == 0)) then
+                phrase = phrase.."An enemy "..target.." attacks Mario! "
+                negateJumpPhrase = 1
+                bookin_it = 0
+
+            end
+        end
+    end
+
+    -- enemy-enemy bounce collisions
+    if collision_type > 0x01 and ee_col[i] == 0 and state ~= 0x84 and state ~= 0x20 and state ~= 0x04 then
+       
+        for j, val in ipairs(objects) do
+            if j ~= i and BIT(8 - j) == AND(collision_type, BIT(8 - j)) and 
+                (AND(objStates[j], 0x20) ~= 0x20 and AND(objStates[j], 0x04) ~= 0x04) then
+
+                if AND(objStates[i], objStates[j], 0x80) == 0x80 or AND(oldObjStates[i], oldObjStates[j], 0x80) == 0x80 then
+                    phrase = phrase.."Mario notices that an enemy "..target.." shell crashed into an enemy "..objLookup[objects[j]].." shell! "
+                elseif (objStates[i] ~= 0x84 and objStates[j] ~= 0x84) then
+                    phrase = phrase.."Mario notices that an enemy "..target.." bumped into an enemy "..objLookup[objects[j]]..". "
+                end
+
+                -- prevent double-counting (just in case)
+                ee_col[i] = 1
+                ee_col[j] = 1
+                
+            end
         end
     end
 
@@ -418,7 +455,7 @@ function levelPhrase(lv, wo, text)
         phrase = phrase.."A plumber from Brooklyn, Mario ducks down the wrong pipe while on a job and "..
             "finds himself in the Mushroom Kingdom. He hears a sordid tale about how the ruler of the realm, "..
             "Princess Toadstool, has been kidnapped by the evil Bowser and held in his castle dungeon. "..
-            "Mario resolves to fight his way through the extraordianry Mushroom Kindgom and rescue the Princess! "
+            "Mario resolves to fight his way through the extraordinary Mushroom Kindgom and rescue the Princess! "
 
         -- hack to monkey around with how many lives we have
         if start_with_100_lives == true then
@@ -455,7 +492,7 @@ end
 
 function coinsPhrase(text)
 
-    local phrase = "Mario collected a coin. "
+    local phrase = "Mario collects a coin. "
     text = safeAppend(text, phrase)
     return text
 end
@@ -492,9 +529,9 @@ function starPhrase(starStatus, oldStarStatus, text)
     local phrase = ""
 
     if starStatus == 1 and oldStarStatus == 0 then
-        phrase = phrase.."Mario obtained a star and became invincible. "
+        phrase = phrase.."Mario obtains a star and became invincible. "
     else
-        phrase = phrase.."Mario's star power has dissipated and he is no longer impervious to enemy damage. "
+        phrase = phrase.."Mario's star power dissipates and he is no longer impervious to enemy damage. "
     end
 
     text = safeAppend(text, phrase)
@@ -506,7 +543,7 @@ function iFramePhrase(iFrameStatus, oldIFrameStatus, text)
     local phrase = ""
 
     if iFrameStatus == 1 and oldIFrameStatus == 0 then
-        phrase = phrase.."Mario became temporarily invincible after losing his power-up. "
+        phrase = phrase.."Mario becomes temporarily invincible after losing his power-up. "
     else
         phrase = phrase.."Mario is no longer impervious to enemy damage. "
     end
@@ -541,7 +578,7 @@ function viewPhrase(playerView, text)
     local phrase = ""
 
     if playerView == 5 then
-        phrase = phrase.."Mario has fallen into a pit. "
+        phrase = phrase.."Mario stumbles and falls into a pit. "
     end
 
     text = safeAppend(text, phrase)
@@ -553,9 +590,9 @@ function brickPhrase(text)
     local phrase = "Mario hits a brick with his head"
 
     if powerUpState > 1 then
-        phrase = phrase.." and destroys it. "
+        phrase = phrase.." and breaks it into little pieces. "
     else
-        phrase = phrase..". "
+        phrase = phrase.." but doesn't break it. "
     end
 
     text = safeAppend(text, phrase)
@@ -567,14 +604,14 @@ function timePhrase(curtime, text)
     local phrase = ""
 
     if curtime ~= 0 then
-        phrase = phrase.."Mario glanced at his watch and realized that there are now "..curtime..
+        phrase = phrase.."Mario glances at his watch and realizes that there are now "..curtime..
              " units of time remaining in this stage. "
 
         if curtime == 100 then
             phrase = phrase.."Mario is running out of time to finish the stage! His pulse quickens! "
         end
     else
-        phrase = phrase.."Mario has run out of time to finish the level! A mysterious force destroys him. "
+        phrase = phrase.."Mario runs out of time to finish the level! A mysterious force destroys him. "
     end
 
     text = safeAppend(text, phrase)
@@ -598,7 +635,7 @@ function floatPhrase(floatState, spriteState, text)
 
     if floatState == 0x00 then
         phrase = phrase.."Mario lands on solid ground. "
-    elseif floatState == 0x01 and spriteState ~= 0x0B and thisPalette ~= 0x00 then
+    elseif floatState == 0x01 and spriteState ~= 0x0B and thisPalette ~= 0x00 and negateJumpPhrase == 0 then
         phrase = phrase.."Mario jumps. "
     elseif floatState == 0x02 then
         phrase = phrase.."Mario falls off an edge. "
@@ -744,12 +781,16 @@ function runPhrase(vel, text)
 
     if vel == 2 then
         spd = "running. "
+        bookin_it = 1
     elseif vel == 4 and thisPalette ~= 0x00 then
         spd = "walking. "
+        bookin_it = 0
     elseif vel == 4 and thisPalette == 0x00 then
         spd = "paddling.  "
+        bookin_it = 0
     elseif vel == 7 then
         spd = "to slow down. "
+        bookin_it = 0
     end
 
     if spd ~= nil then
@@ -807,8 +848,17 @@ function fireballPhrase(fireballCount, oldFireballCount, text)
     local phrase = ""
 
     if fireballCount > oldFireballCount then
-        phrase = phrase.."Mario shoots a fireball. "
+        phrase = phrase.."Mario throws a fireball. "
     end
+
+    text = safeAppend(text, phrase)
+    return text
+
+end
+
+function bookinItPhrase(text)
+
+    local phrase = "Mario is really zooming through the level! Nothing's getting in the way! "
 
     text = safeAppend(text, phrase)
     return text
@@ -832,8 +882,13 @@ function frameRuleUpdate()
     gameState = memory.readbyte(0x0770); --0 = title screen, 1 = playing the game, 2 = rescued toad/peach, 3 = game over
     gameTimer = memory.readbyte(0x07F8)*100 + memory.readbyte(0x07F9)*10 + memory.readbyte(0x07FA);
 
+    if bookin_it > 0 then
+        bookin_it = bookin_it + 1
+    end
+
     coinsBuffer = 0
     scoreBuffer = 0
+    negateJumpPhrase = 0
     world = memory.readbyte(0x075F)+1
     level = memory.readbyte(0x0760)+1
     powerUpState = memory.readbyte(0x0756)
@@ -890,13 +945,19 @@ function frameRuleUpdate()
     end
     oldPowerUpDrawn = powerUpDrawn
 
+    -- Check for Game Over
     if gameState == 3 and oldGameState ~= 3 then
         text = gameOverPhrase(text)
     end
     oldGameState = gameState
 
+    -- Maybe we're speedrunning
+    if bookin_it > 0 and bookin_it % 20 == 0 then
+        text = bookinItPhrase(text)
+    end
+
     -- debug
-    -- emu.message(objStates[1]..objStates[2]..objStates[3]..objStates[4]..objStates[5])
+    -- emu.message(objCollisionStates[1]..' '..objCollisionStates[2]..' '..objCollisionStates[3]..' '..objCollisionStates[4]..' '..objCollisionStates[5])
 
 end
 
@@ -1005,6 +1066,7 @@ while true do
     -- Check for fallen into a pit
     if (playerView ~= oldPlayerView) and (oldPlayerView ~= nil) then
         text = viewPhrase(playerView, text)
+        bookin_it = 0
     end 
     oldPlayerView = playerView
     
