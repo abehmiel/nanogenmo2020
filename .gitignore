@@ -1,6 +1,6 @@
 /roms/*
 /python/.ipynb_checkpoints/
-/txt
+/txt/story.txt
 /lua/*.swp
 /maps/*.swp
 /json/colors.json
