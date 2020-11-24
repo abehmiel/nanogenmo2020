@@ -1,4 +1,4 @@
-# nanogenmo2020
+# NaNoGenMo2020
 
 NaNoGenMo2020: Mario's Big Adventure
 
