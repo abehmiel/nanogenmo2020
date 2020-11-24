@@ -33,7 +33,7 @@ To use the script, you must use the FCEUX NES emulator (available on all platfor
 
 3) Start up FCEUX.
 
-4) Load the game ROM, use the `File -> Loadlua script` menu option to load `lua/gen.lua` in this repository, and start playing. 
+4) Load the game ROM, use the `File -> Load lua script` menu option to load `lua/gen.lua` in this repository, and start playing. 
 The events will be written to file: `txt/story.txt`.
 The script isn't very stable right now if you load it anywhere besides the title screen.
 
